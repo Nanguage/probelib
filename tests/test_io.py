@@ -3,12 +3,13 @@ import sys
 sys.path.insert(0, ".")
 from probelib.io.fasta import read_fa
 from probelib.io.fastq import write_fq, read_fq, fq2fa
+from probelib.io.align import read_align_blocks
 
 HERE = dirname(abspath(__file__))
+fa_path = join(HERE, "data/lib.fa")
 
 
 def test_read_fa():
-    fa_path = join(HERE, "data/lib.fa")
     for name, seq in read_fa(fa_path):
         assert type(name) is str
         assert type(seq) is str
@@ -66,3 +67,23 @@ def test_fq2fa():
         assert name.startswith("chr")
         assert seq == "AAATTTCCC"
 
+
+def test_read_align_blocks():
+    tmp_sam = "/tmp/test_read_aln_block.sam"
+    from probelib.gen import slide_through_fasta
+    from probelib.io.fastq import write_fq
+    from probelib.align.bowtie2 import align_se_sen as align_bt
+    from itertools import islice
+    gen = slide_through_fasta(fa_path, 40, 30)
+    gen = islice(gen, 0, 3)
+    tmp_fq_path = "/tmp/test_read_align_blocks.fq"
+    write_fq(tmp_fq_path, gen)
+    bowtie_index = join(HERE, "data/bowtie2-index/lib")
+    align_bt(tmp_fq_path, bowtie_index, tmp_sam, log=None)
+    blocks = []
+    for q_name, block in read_align_blocks(tmp_sam):
+        assert type(q_name) is str
+        assert type(block) is list
+        assert len(block) > 0
+        blocks.append(block)
+    assert len(blocks) == 3

@@ -13,6 +13,7 @@ dependencies:
   - bowtie2
   - samtools
   - blast
+  - pysam
   - pip:
       - pyfaidx
       - biopython

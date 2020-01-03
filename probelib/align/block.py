@@ -35,7 +35,7 @@ GenomicRegion = t.Tuple[str, int, int]
 def in_region(target_region: GenomicRegion,
               name: str, start: int, end: int) -> bool:
     r = target_region
-    return (r[0] == name) & (start >= r[1]) & (end >= r[2])
+    return (r[0] == name) & (start >= r[1]) & (end <= r[2])
 
 
 def specificity(

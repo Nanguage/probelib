@@ -21,3 +21,4 @@ dependencies:
       - toolz
       - cytoolz
       - bramin==0.0.1
+      - intervaltree

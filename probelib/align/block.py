@@ -1,13 +1,13 @@
 import typing as t
 import pysam
 
-
-aln = t.Tuple[str, int, int]
+Aln = t.Tuple[str, int, int]
+Block = t.Tuple[str, t.List[Aln]]
 
 
 def read_align_blocks(
         sam_path: str
-        ) -> t.Iterable[t.Tuple[str, t.List[aln]]]:
+        ) -> t.Iterable[Block]:
     def yield_cond(old, rec, block, end=False):
         res = (old is not None) and (len(block) > 0)
         if res and not end:
@@ -28,3 +28,19 @@ def read_align_blocks(
         if yield_cond(old, rec, block, end=True):
             yield old.query_name, block
 
+
+GenomicRegion = t.Tuple[str, int, int]
+
+
+def in_region(target_region: GenomicRegion,
+              name: str, start: int, end: int) -> bool:
+    r = target_region
+    return (r[0] == name) & (start >= r[1]) & (end >= r[2])
+
+
+def specificity(
+        block: Block,
+        target_region: GenomicRegion) -> float:
+    qname, alns = block
+    in_range = [in_region(target_region, n, s, e) for (n, s, e) in alns]
+    return len(in_range) / len(alns)

@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, ".")
 from probelib.io.fasta import read_fa
 from probelib.io.fastq import write_fq, read_fq, fq2fa
-from probelib.io.align import read_align_blocks
+from probelib.align.block import read_align_blocks
 
 HERE = dirname(abspath(__file__))
 fa_path = join(HERE, "data/lib.fa")
@@ -72,10 +72,13 @@ def test_read_align_blocks():
     tmp_sam = "/tmp/test_read_aln_block.sam"
     from probelib.gen import slide_through_fasta
     from probelib.io.fastq import write_fq
-    from probelib.align.bowtie2 import align_se_sen as align_bt
-    from itertools import islice
+    from probelib.align.wrap.bowtie2 import align_se_sen as align_bt
+    from itertools import islice, chain
     gen = slide_through_fasta(fa_path, 40, 30)
     gen = islice(gen, 0, 3)
+    g2 = slide_through_fasta(fa_path, 10, 5)
+    g2 = islice(g2, 0, 3)
+    gen = chain(gen, g2)
     tmp_fq_path = "/tmp/test_read_align_blocks.fq"
     write_fq(tmp_fq_path, gen)
     bowtie_index = join(HERE, "data/bowtie2-index/lib")

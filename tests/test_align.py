@@ -1,8 +1,7 @@
 from os.path import abspath, dirname, join
 import sys
 sys.path.insert(0, ".")
-from probelib.align.bowtie2 import align_se_sen as align_bt
-from probelib.align.blastn import align as align_bl
+from probelib.align.wrap.bowtie2 import align_se_sen as align_bt
 
 HERE = dirname(abspath(__file__))
 fapath = join(HERE, "data/lib.fa")

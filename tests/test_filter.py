@@ -2,6 +2,7 @@ from os.path import abspath, dirname, join
 import sys
 sys.path.insert(0, ".")
 from probelib.filters.avoid_otp import AvoidOTP
+from probelib.filters.acc import Unique, KeepDist
 
 HERE = dirname(abspath(__file__))
 fa_path = join(HERE, "data/lib.fa")
@@ -39,3 +40,18 @@ def test_AvoidOTP():
     assert len(filtered) == 2
     for name, aligns in filtered:
         assert name != "q3"
+
+
+def test_Unique():
+    seqs = ["AAA", "ATA", "AAA", "TTT"]
+    acc = Unique()
+    filtered = list(acc.filter(seqs))
+    assert filtered == ["AAA", "ATA", "TTT"]
+
+
+def test_keepDist():
+    seqs = ["AAA", "AAT", "GGG", "GGC"]
+    acc = KeepDist(2)
+    filtered = list(acc.filter(seqs))
+    assert filtered == ["AAA", "GGG"]
+

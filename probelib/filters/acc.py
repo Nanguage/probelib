@@ -4,7 +4,7 @@ import editdistance.bycython
 edit_dist = editdistance.bycython.eval
 
 
-class Accumulator(object):
+class Unique(object):
 
     def __init__(self):
         self.set = dict()
@@ -15,13 +15,7 @@ class Accumulator(object):
         else:
             self.set[e] = 0
 
-    def accumulate(self, up_stream: t.Iterable) -> t.Iterable:
-        """Accumulate a stream."""
-        for e in up_stream:
-            self.add(e)
-            yield e
-
-    def unique(self, up_stream: t.Iterable) -> t.Iterable:
+    def filter(self, up_stream: t.Iterable) -> t.Iterable:
         """Let the elements in stream occurrence only once."""
         for e in up_stream:
             if e not in self.set:
@@ -30,17 +24,26 @@ class Accumulator(object):
             else:
                 continue
 
-    def keep_distance(self,
-                      up_stream: t.Iterable,
-                      d: float,
-                      dist_func: t.Callable = edit_dist) -> t.Iterable:
+
+class KeepDist(object):
+
+    def __init__(self,
+                 d: float,
+                 dist_func: t.Callable = edit_dist
+                 ):
+        self.set = []
+        self.d = d
+        self.dist_func = dist_func
+
+    def add(self, e):
+        self.set.append(e)
+
+    def filter(self, up_stream: t.Iterable) -> t.Iterable:
         """Let elements in stream keep distance with existing elements."""
         for e in up_stream:
             for e2 in self.set:
-                if e is e2:
-                    continue
-                if dist_func(e, e2) <= d:
-                    continue
-                else:
-                    yield e
+                if self.dist_func(e, e2) <= self.d:
                     break
+            else:
+                self.add(e)
+                yield e

@@ -8,7 +8,7 @@ from probelib.align.block import Block, Aln, is_overlap
 class AvoidOTP(object):
     """Avoid Out of Target Peak."""
     def __init__(self,
-                 target_region: t.Tuple[str, int, int],
+                 target_region: t.Optional[t.Tuple[str, int, int]] = None,
                  density_thresh: float = 1e-3,
                  search_range: t.Tuple[int, int] = (-10**6, 10**6)):
         self.trees = defaultdict(IntervalTree)
@@ -34,7 +34,9 @@ class AvoidOTP(object):
                 rname, start, end = aln
                 tree = self.trees[rname]
 
-                if is_overlap(self.target_region, (rname, start, end)):
+                if not self.target_region:
+                    search = True
+                elif is_overlap(self.target_region, (rname, start, end)):
                     if tree[start:end]:
                         # avoid overlap in target region
                         self.remove_from_tree(inserted)

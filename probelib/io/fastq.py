@@ -3,7 +3,7 @@ import typing as t
 
 def write_fq(
         path: str,
-        g: t.Iterable[t.Tuple[str, str, int, int]]) -> str:
+        g: t.Iterable[t.Tuple[str, str, str]]) -> str:
     """Write contents in sub-sequence generator to fastq file.
 
     :param path: Target fastq file.
@@ -11,9 +11,7 @@ def write_fq(
     :return: output fastq path.
     """
     with open(path, 'w') as f:
-        for seq, name, s, e in g:
-            seqname = f"{name}_{s}_{e}"
-            qualstr = "~" * len(seq)
+        for seqname, seq, qualstr in g:
             f.write("@"+seqname+"\n")
             f.write(seq+"\n")
             f.write("+\n")

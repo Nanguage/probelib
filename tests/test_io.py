@@ -15,12 +15,14 @@ def test_read_fa():
         assert type(seq) is str
 
 
+def gen():
+    for i in range(5):
+        yield f"chr1_{i}_{i+10}", "AAATTTCCC", "~~~~~~~~~"
+
+
 def test_write_fq():
     tmp_fq_path = "/tmp/test_write.fq"
 
-    def gen():
-        for i in range(5):
-            yield "AAATTTCCC", "chr1", i, i + 10
     g = gen()
     write_fq(tmp_fq_path, g)
 
@@ -39,10 +41,6 @@ def test_write_fq():
 def test_read_fq():
     tmp_fq_path = "/tmp/test_read.fq"
 
-    def gen():
-        for i in range(5):
-            yield "AAATTTCCC", "chr1", i, i + 10
-
     g = gen()
     write_fq(tmp_fq_path, g)
     recs = list(read_fq(tmp_fq_path))
@@ -55,10 +53,6 @@ def test_read_fq():
 def test_fq2fa():
     tmp_fq_path = "/tmp/test_fq2fa.fq"
 
-    def gen():
-        for i in range(5):
-            yield "AAATTTCCC", "chr1", i, i + 10
-
     g = gen()
     write_fq(tmp_fq_path, g)
     tmp_fa_path = "/tmp/test_fq2fa.fa"
@@ -70,7 +64,7 @@ def test_fq2fa():
 
 def test_read_align_blocks():
     tmp_sam = "/tmp/test_read_aln_block.sam"
-    from probelib.gen import slide_through_fasta
+    from probelib.gen import slide_through_fasta, to_fq_rec
     from probelib.io.fastq import write_fq
     from probelib.align.wrap.bowtie2 import align_se_sen as align_bt
     from itertools import islice, chain
@@ -79,13 +73,14 @@ def test_read_align_blocks():
     g2 = slide_through_fasta(fa_path, 10, 5)
     g2 = islice(g2, 0, 3)
     gen = chain(gen, g2)
+    gen = map(to_fq_rec, gen)
     tmp_fq_path = "/tmp/test_read_align_blocks.fq"
     write_fq(tmp_fq_path, gen)
     bowtie_index = join(HERE, "data/bowtie2-index/lib")
     align_bt(tmp_fq_path, bowtie_index, tmp_sam, log=None)
     blocks = []
-    for q_name, block in read_align_blocks(tmp_sam):
-        assert type(q_name) is str
+    for q_name, seq, block in read_align_blocks(tmp_sam):
+        assert type(q_name) is type(seq) is str
         assert type(block) is list
         assert len(block) > 0
         blocks.append(block)

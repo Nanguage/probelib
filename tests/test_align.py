@@ -8,7 +8,7 @@ fapath = join(HERE, "data/lib.fa")
 
 
 def test_bowtie2_align():
-    from probelib.gen import slide_through_fasta
+    from probelib.gen import slide_through_fasta, to_fq_rec
     from probelib.io.fastq import write_fq
     from itertools import islice, chain
     fa_gen1 = slide_through_fasta(fapath, 40, 30)
@@ -16,6 +16,7 @@ def test_bowtie2_align():
     fa_gen2 = slide_through_fasta(fapath, 20, 10)
     fa_gen2 = islice(fa_gen2, 0, 3)
     gen = chain(fa_gen1, fa_gen2)
+    gen = map(to_fq_rec, gen)
     tmp_fq_path = "/tmp/test_bowtie.fq"
     write_fq(tmp_fq_path, gen)
     tmp_sam_path = "/tmp/test_bowtie.sam"

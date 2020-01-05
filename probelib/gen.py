@@ -81,3 +81,9 @@ def slide_through_fasta(path: str,
         for sub, s, e in slide_through(seq, slen, overlap):
             yield sub, name, s, e
 
+
+def to_fq_rec(rec: t.Tuple[str, str, int, int]) -> t.Tuple[str, str, str]:
+    seq, name, s, e = rec
+    seqname = f"{name}:{s}_{e}"
+    qualstr = "~"*len(seq)
+    return seqname, seq, qualstr

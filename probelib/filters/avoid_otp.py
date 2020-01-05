@@ -2,7 +2,7 @@ import typing as t
 from collections import defaultdict
 from intervaltree import IntervalTree, Interval
 
-from probelib.align.block import Block, Aln, in_region
+from probelib.align.block import Block, Aln, is_overlap
 
 
 class AvoidOTP(object):
@@ -23,23 +23,25 @@ class AvoidOTP(object):
             tree[start:end] = rname
 
     def remove_from_tree(self, inserted):
-        for rname, itv in inserted:
+        for rname, itv in list(set(inserted)):
             self.trees[rname].remove(itv)
 
     def filter(self, g: t.Iterable[Block]) -> t.Iterable[Block]:
-        for qname, alns in g:
+        for qname, seq, alns in g:
             inserted = []
             for aln in alns:
                 search = True
                 rname, start, end = aln
                 tree = self.trees[rname]
-                if in_region(self.target_region, rname, start, end):
+
+                if is_overlap(self.target_region, (rname, start, end)):
                     if tree[start:end]:
                         # avoid overlap in target region
                         self.remove_from_tree(inserted)
                         break
                     else:
                         search = False
+
                 if search:
                     range_ = (start+self.search_range[0], end+self.search_range[1])
                     in_range = tree[range_[0]:range_[1]]
@@ -48,8 +50,9 @@ class AvoidOTP(object):
                         # avoid peak
                         self.remove_from_tree(inserted)
                         break
+
                 itv = Interval(start, end, qname)
                 tree.add(itv)
                 inserted.append((rname, itv))
             else:
-                yield qname, alns
+                yield qname, seq, alns

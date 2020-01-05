@@ -10,21 +10,21 @@ fa_path = join(HERE, "data/lib.fa")
 
 def mock_align_blocks():
     blocks = [
-        ('q1', [
+        ('q1', "", [
             ('chr1', 100, 110),
             ('chr1', 110, 120),
             ('chr1', 120, 130),
         ]),
-        ('q2', [
+        ('q2', "", [
             ('chr1', 130, 140),
             ('chr2', 120, 130),
         ]),
-        ('q3', [
+        ('q3', "", [
             ('chr1', 140, 150),
             ('chr2', 130, 140),
             ('chr2',  90, 100),
         ]),
-        ('q4', [
+        ('q4', "", [
             ('chr1', 100, 110),
         ]),
     ]
@@ -38,8 +38,9 @@ def test_AvoidOTP():
                     search_range=(-100, 100))
     filtered = list(aotp.filter(align_blocks))
     assert len(filtered) == 2
-    for name, aligns in filtered:
+    for name, seq, aligns in filtered:
         assert name != "q3"
+        assert name != "q4"
 
 
 def test_Unique():

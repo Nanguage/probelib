@@ -62,26 +62,34 @@ def test_fq2fa():
         assert seq == "AAATTTCCC"
 
 
+def mimic_sam_file(path):
+    contents = """@HD     VN:1.0  SO:unsorted
+@SQ     SN:chr1 LN:100
+@SQ     SN:chr3 LN:300
+@PG     ID:bowtie2      PN:bowtie2      VN:2.3.5        CL:"/opt/anaconda/envs/probe_design/bin/bowtie2-align-s --wrapper basic-0 -x /home/wzxu/Projects/probelib/tests/data/bowtie2-index/lib -t -k 100 --very-sensitive-local -p 10 -S /tmp/test_bowtie.sam -U /tmp/test_bowtie.fq"
+chr1:0_40       0       chr1    1       1       40M     *       0       0       GGAGGACTGTGCTAAAAGAAGTAACCCATCATCCTTATCA     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        AS:i:80 XS:i:80      XN:i:0  XM:i:0  XO:i:0  XG:i:0  NM:i:0  MD:Z:40 YT:Z:UU
+chr1:0_40       256     chr3    101     1       40M     *       0       0       GGAGGACTGTGCTAAAAGAAGTAACCCATCATCCTTATCA     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        AS:i:80 XS:i:80      XN:i:0  XM:i:0  XO:i:0  XG:i:0  NM:i:0  MD:Z:40 YT:Z:UU
+chr1:0_40       256     chr3    151     1       40M     *       0       0       GGAGGACTGTGCTAAAAGAAGTAACCCATCATCCTTATCA     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        AS:i:56 XS:i:80      XN:i:0  XM:i:3  XO:i:0  XG:i:0  NM:i:3  MD:Z:9G1G0G27   YT:Z:UU
+chr1:10_50      0       chr1    11      1       40M     *       0       0       GCTAAAAGAAGTAACCCATCATCCTTATCACTGAGTGTAA     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        AS:i:80 XS:i:80      XN:i:0  XM:i:0  XO:i:0  XG:i:0  NM:i:0  MD:Z:40 YT:Z:UU
+chr1:10_50      256     chr3    111     1       40M     *       0       0       GCTAAAAGAAGTAACCCATCATCCTTATCACTGAGTGTAA     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        AS:i:80 XS:i:80      XN:i:0  XM:i:0  XO:i:0  XG:i:0  NM:i:0  MD:Z:40 YT:Z:UU
+"""
+    import re
+    contents = re.sub(r" +", "\t", contents)
+    with open(path, 'w') as f:
+        f.write(contents)
+
+
 def test_read_align_blocks():
     tmp_sam = "/tmp/test_read_aln_block.sam"
-    from probelib.gen import slide_through_fasta, to_fq_rec
-    from probelib.io.fastq import write_fq
-    from probelib.align.wrap.bowtie2 import align_se_sen as align_bt
-    from itertools import islice, chain
-    gen = slide_through_fasta(fa_path, 40, 30)
-    gen = islice(gen, 0, 3)
-    g2 = slide_through_fasta(fa_path, 10, 5)
-    g2 = islice(g2, 0, 3)
-    gen = chain(gen, g2)
-    gen = map(to_fq_rec, gen)
-    tmp_fq_path = "/tmp/test_read_align_blocks.fq"
-    write_fq(tmp_fq_path, gen)
-    bowtie_index = join(HERE, "data/bowtie2-index/lib")
-    align_bt(tmp_fq_path, bowtie_index, tmp_sam, log=None)
+    mimic_sam_file(tmp_sam)
     blocks = []
-    for q_name, seq, block in read_align_blocks(tmp_sam):
+    for q_name, seq, alns in read_align_blocks(tmp_sam):
         assert type(q_name) is type(seq) is str
-        assert type(block) is list
-        assert len(block) > 0
-        blocks.append(block)
-    assert len(blocks) == 3
+        assert type(alns) is list
+        assert len(alns) > 0
+        blocks.append(alns)
+        if q_name == "chr1:0_40":
+            assert len(alns) == 3
+        if q_name == "chr1:10_50":
+            assert len(alns) == 2
+    assert len(blocks) == 2

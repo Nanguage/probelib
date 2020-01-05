@@ -17,14 +17,13 @@ def read_align_blocks(
         alns = []
         old = None
         for rec in sam.fetch():
+            # is correct use this to represent the align position?
+            aln = rec.reference_name, rec.reference_start, rec.reference_end
             if yield_cond(old, rec, alns):
                 yield old.query_name, old.query_sequence, alns
                 alns = []
-            else:
-                if rec.reference_name is not None:
-                    aln = rec.reference_name, rec.reference_start, rec.reference_end
-                    # is correct use this to represent the align position?
-                    alns.append(aln)
+            if aln[0] is not None:
+                alns.append(aln)
             old = rec
         if yield_cond(old, rec, alns, end=True):
             yield old.query_name, old.query_sequence, alns
@@ -57,7 +56,7 @@ def is_overlap(r1: GenomicRegion, r2: GenomicRegion) -> bool:
     )
 
 
-def count_ovlap_with_region(
+def count_overlap_with_region(
         block: Block,
         target_region: GenomicRegion) -> t.Tuple[int, int]:
     _, _, alns = block

@@ -33,7 +33,7 @@ def mock_align_blocks():
 
 def test_AvoidOTP():
     align_blocks = mock_align_blocks()
-    aotp = AvoidOTP(target_region=("chr1", 100, 200),
+    aotp = AvoidOTP(target_regions=[("chr1", 100, 200)],
                     density_thresh=0.01,
                     search_range=(-100, 100))
     filtered = list(aotp.filter(align_blocks))

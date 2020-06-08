@@ -10,11 +10,13 @@ class AvoidOTP(object):
     def __init__(self,
                  target_regions: t.List[t.Tuple[str, int, int]],
                  density_thresh: float = 1e-3,
-                 search_range: t.Tuple[int, int] = (-10**6, 10**6)):
+                 search_range: t.Tuple[int, int] = (-10**6, 10**6),
+                 avoid_target_overlap: bool = True):
         self.trees = defaultdict(IntervalTree)
         self.target_region = target_regions
         self.density_thresh = density_thresh
         self.search_range = search_range
+        self.avoid_target_overlap = avoid_target_overlap
 
     def add(self, alns: t.Iterable[Aln]):
         for aln in alns:
@@ -38,7 +40,7 @@ class AvoidOTP(object):
                 tree = self.trees[rname]
 
                 if self.overlap_with_targets((rname, start, end)):
-                    if tree[start:end]:
+                    if self.avoid_target_overlap and tree[start:end]:
                         # avoid overlap in target region
                         self.remove_from_tree(inserted)
                         break

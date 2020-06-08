@@ -9,6 +9,7 @@ def avoid_otp(
         target_regions: t.List[str],
         density_thresh: float = 1e-5,
         search_range: t.Tuple[int, int] = (-1e5, 1e5),
+        avoid_target_overlap: bool = True,
         ):
     regions = [parse_region(r) for r in target_regions]
     blocks = list(read_align_blocks(sam_path))
@@ -20,7 +21,7 @@ def avoid_otp(
     if regions:
         blocks.sort(key=sort_key, reverse=True)
 
-    acc = AvoidOTP(regions, density_thresh, search_range)
+    acc = AvoidOTP(regions, density_thresh, search_range, avoid_target_overlap)
     blocks = acc.filter(blocks)
 
     counted = []
